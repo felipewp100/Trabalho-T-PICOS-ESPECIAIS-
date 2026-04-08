@@ -1,0 +1,320 @@
+{
+  "info": {
+    "name": "API Tarefas — Dart + SQLite",
+    "description": "Collection completa para a API REST de Tarefas construída com Dart + shelf + SQLite.\n\nBase URL: http://localhost:8080\n\nEndpoints cobertos:\n- GET  /tarefas          → listar todas\n- GET  /tarefas?concluida=true  → filtrar por status\n- GET  /tarefas/:id     → buscar por ID\n- POST /tarefas          → criar tarefa\n- PUT  /tarefas/:id     → atualizar tarefa\n- DELETE /tarefas/:id   → deletar tarefa",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8080",
+      "type": "string"
+    },
+    {
+      "key": "tarefa_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Tarefas",
+      "item": [
+        {
+          "name": "Listar todas as tarefas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tarefas",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas"]
+            },
+            "description": "Retorna todas as tarefas cadastradas, ordenadas por ID decrescente.\n\nResposta esperada: 200 OK\n```json\n[\n  {\n    \"id\": 1,\n    \"titulo\": \"Estudar APIs REST\",\n    \"descricao\": \"Aprender REST com Dart\",\n    \"concluida\": false\n  }\n]\n```"
+          },
+          "response": [
+            {
+              "name": "200 — Lista de tarefas",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/tarefas",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": 2,\n    \"titulo\": \"Estudar Dart\",\n    \"descricao\": \"Praticar async/await\",\n    \"concluida\": false\n  },\n  {\n    \"id\": 1,\n    \"titulo\": \"Estudar APIs REST\",\n    \"descricao\": \"Aprender REST com Dart\",\n    \"concluida\": true\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "Filtrar por status — pendentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tarefas?concluida=false",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas"],
+              "query": [
+                {
+                  "key": "concluida",
+                  "value": "false",
+                  "description": "Use 'true' para tarefas concluídas, 'false' para pendentes"
+                }
+              ]
+            },
+            "description": "Filtra tarefas pelo campo `concluida`.\n\n- `?concluida=false` → tarefas pendentes\n- `?concluida=true`  → tarefas concluídas"
+          },
+          "response": []
+        },
+        {
+          "name": "Filtrar por status — concluídas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tarefas?concluida=true",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas"],
+              "query": [
+                {
+                  "key": "concluida",
+                  "value": "true"
+                }
+              ]
+            },
+            "description": "Retorna apenas as tarefas marcadas como concluídas."
+          },
+          "response": []
+        },
+        {
+          "name": "Buscar tarefa por ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tarefas/{{tarefa_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas", "{{tarefa_id}}"]
+            },
+            "description": "Busca uma tarefa específica pelo ID.\n\nAltere a variável `tarefa_id` na collection para testar IDs diferentes.\n\nRespostas possíveis:\n- 200 OK → tarefa encontrada\n- 400 Bad Request → ID não é um número\n- 404 Not Found → tarefa não existe"
+          },
+          "response": [
+            {
+              "name": "200 — Tarefa encontrada",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/tarefas/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Aprender REST com Dart\",\n  \"concluida\": false\n}"
+            },
+            {
+              "name": "404 — Não encontrada",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{base_url}}/tarefas/999",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas", "999"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"erro\": \"Tarefa não encontrada\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Criar nova tarefa",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('tarefa_id', json.id);",
+                  "  console.log('tarefa_id atualizado para:', json.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Aprender os conceitos de REST com Dart e shelf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/tarefas",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas"]
+            },
+            "description": "Cria uma nova tarefa.\n\nCampos obrigatórios:\n- `titulo` (string)\n- `descricao` (string)\n\nCampos opcionais:\n- `concluida` (boolean, padrão: false)\n\nO script de teste atualiza automaticamente a variável `tarefa_id` com o ID da tarefa criada.\n\nRespostas possíveis:\n- 201 Created → tarefa criada com sucesso\n- 400 Bad Request → campos obrigatórios faltando ou JSON inválido"
+          },
+          "response": [
+            {
+              "name": "201 — Tarefa criada",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Aprender REST com Dart\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/tarefas",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas"]
+                }
+              },
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Aprender REST com Dart\",\n  \"concluida\": false\n}"
+            },
+            {
+              "name": "400 — Campos obrigatórios faltando",
+              "originalRequest": {
+                "method": "POST",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titulo\": \"Sem descricao\"\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/tarefas",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"erro\": \"Campos \\\"titulo\\\" e \\\"descricao\\\" são obrigatórios\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Atualizar tarefa (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Conceitos aprendidos com sucesso!\",\n  \"concluida\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/tarefas/{{tarefa_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas", "{{tarefa_id}}"]
+            },
+            "description": "Atualiza uma tarefa existente (substituição completa dos campos).\n\nTodos os campos são obrigatórios no body:\n- `titulo` (string)\n- `descricao` (string)\n- `concluida` (boolean)\n\nRespostas possíveis:\n- 200 OK → atualizado com sucesso\n- 400 Bad Request → JSON inválido ou campos faltando\n- 404 Not Found → tarefa não existe"
+          },
+          "response": [
+            {
+              "name": "200 — Tarefa atualizada",
+              "originalRequest": {
+                "method": "PUT",
+                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Conceitos aprendidos!\",\n  \"concluida\": true\n}"
+                },
+                "url": {
+                  "raw": "{{base_url}}/tarefas/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": 1,\n  \"titulo\": \"Estudar APIs REST\",\n  \"descricao\": \"Conceitos aprendidos!\",\n  \"concluida\": true\n}"
+            }
+          ]
+        },
+        {
+          "name": "Deletar tarefa",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/tarefas/{{tarefa_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["tarefas", "{{tarefa_id}}"]
+            },
+            "description": "Remove permanentemente uma tarefa pelo ID.\n\nRespostas possíveis:\n- 200 OK → deletada com sucesso\n- 400 Bad Request → ID inválido\n- 404 Not Found → tarefa não existe"
+          },
+          "response": [
+            {
+              "name": "200 — Deletada com sucesso",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{base_url}}/tarefas/1",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas", "1"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"mensagem\": \"Tarefa 1 deletada com sucesso\"\n}"
+            },
+            {
+              "name": "404 — Não encontrada",
+              "originalRequest": {
+                "method": "DELETE",
+                "url": {
+                  "raw": "{{base_url}}/tarefas/999",
+                  "host": ["{{base_url}}"],
+                  "path": ["tarefas", "999"]
+                }
+              },
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"erro\": \"Tarefa não encontrada\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
